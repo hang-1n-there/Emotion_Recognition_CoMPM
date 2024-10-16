@@ -15,8 +15,8 @@ class MeldDataLoader(pl.LightningDataModule):
     self.context_window = context_window
 
   def setup(self, stage=None):
-    self.train_dataset = MeldDataset(self.train_file, context_window=self.context_window)
-    self.val_dataset = MeldDataset(self.valid_file, context_window=self.context_window)
+    self.train_dataset = MeldDataset(self.train_dir, context_window=self.context_window)
+    self.val_dataset = MeldDataset(self.valid_dir, context_window=self.context_window)
 
   def train_dataloader(self):
     return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4, collate_fn=self.train_dataset.collate_fn)
