@@ -10,7 +10,7 @@ class ERCTrainer(pl.LightningModule):
   def __init__(self, clsNum, lr=5e-5, weight_decay=1e-2, warmup_step=32):
     super(ERCTrainer, self).__init__()
     self.model = ERC_model(clsNum)
-    self.crit = nn.CrosEntropyLoss()
+    self.crit = nn.CrossEntropyLoss()
     self.lr = lr
     self.weight_decay = weight_decay
     self.warmup_steps = warmup_step
@@ -42,7 +42,7 @@ class ERCTrainer(pl.LightningModule):
     self.log('val_acc', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
     return loss
   
-  def configure_optimizer(self):
+  def configure_optimizers(self):
     optimizer = AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=self.warmup_steps, num_training_step=self.trainer.estimated_stepping_batches
