@@ -39,7 +39,7 @@ class ERCTrainer(pl.LightningModule):
     acc = (preds == labels).float().mean()
 
     self.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True,logger=True)
-    self.log('val_acc', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+    self.log('val_acc', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True)
     return loss
   
   def configure_optimizers(self):
