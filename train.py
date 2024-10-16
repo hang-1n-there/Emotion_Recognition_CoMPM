@@ -14,13 +14,13 @@ def define_argparser():
   )
   p.add_argument(
       '--valid_dir',
-      type='str',
+      type=str,
       help='Set valid file path'
   )
   p.add_argument(
       '--dataset_name',
-      type='str',
-      defalut='meld',
+      type=str,
+      default='meld',
       help='Set dataset name'
   )
   p.add_argument(
@@ -50,7 +50,13 @@ def define_argparser():
   p.add_argument(
       '--lr',
       type=float,
-      default=1.,
+      default=5e-5,
+      help='Initial learning rate. Default=%(default)s',
+  )
+  p.add_argument(
+      '--weight_decay',
+      type=float,
+      default=1e-2,
       help='Initial learning rate. Default=%(default)s',
   )
   p.add_argument(
@@ -71,8 +77,14 @@ def main(config):
   if config.dataset_name.lower() == 'meld':
     clsNum = 7
 
-  model = ERCTrainer(clsNum=clsNum, lr=config.lr, weight_decay=config.weight_decay, warmup_step=config.warmup_step)
-  trainer = Trainer(max_epochs=config.n_epochs, gpus=config.gpu_id, progress_bar_refresh_rate=20, logger=mlflow_logger)
+  model = ERCTrainer(clsNum=clsNum, lr=config.lr, weight_decay=config.weight_decay, warmup_step=config.lr_decay_start)
+  trainer = Trainer(
+    max_epochs=config.n_epochs,
+    devices=[config.gpu_id] if config.gpu_id >= 0 else None,
+    accelerator="gpu" if config.gpu_id >= 0 else "cpu",
+    enable_progress_bar=True,
+    logger=mlflow_logger
+)
 
   trainer.fit(model, data_loader)
 
