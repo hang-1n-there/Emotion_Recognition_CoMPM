@@ -45,6 +45,6 @@ class ERCTrainer(pl.LightningModule):
   def configure_optimizers(self):
     optimizer = AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
     scheduler = get_linear_schedule_with_warmup(
-        optimizer, num_warmup_steps=self.warmup_steps, num_training_step=self.trainer.estimated_stepping_batches
+        optimizer, num_warmup_steps=self.warmup_steps, num_training_steps=self.trainer.estimated_stepping_batches
     )
     return [optimizer], [scheduler]
