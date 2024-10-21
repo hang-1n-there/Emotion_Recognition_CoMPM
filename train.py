@@ -1,8 +1,10 @@
 from lightning.pytorch import loggers as pl_loggers
 from lightning.pytorch import Trainer
+from lightning.pytorch.callbacks import ModelCheckpoint
+
+from trainer import ERCTrainer
 from dataloader import MeldDataLoader
 import argparse
-from trainer import ERCTrainer
 
 def define_argparser():
   p = argparse.ArgumentParser()
@@ -32,7 +34,7 @@ def define_argparser():
   p.add_argument(
       '--n_epochs',
       type=int,
-      default=20,
+      default=3,
       help='Number of epochs to train. Default=%(default)s'
   )
   p.add_argument(
@@ -65,6 +67,14 @@ def define_argparser():
       default=10,
       help='Learning rate decay start at. Default=%(default)s',
   )
+
+  p.add_argument(
+      '--resume_ckpt',
+      type=str,
+      default=None,
+      help='resume train checkpoint path',
+  )
+
   config = p.parse_args()
 
   return config
@@ -76,6 +86,15 @@ def main(config):
 
   if config.dataset_name.lower() == 'meld':
     clsNum = 7
+  
+  checkpoint_callback = ModelCheckpoint(
+    dirpath="/content/gdrive/MyDrive/model_checkpoints/",
+    filename="{epoch}-{val_loss:.2f}",  # 각 체크포인트마다 고유한 이름 생성
+    save_top_k=-1,  # 모든 체크포인트 저장
+    monitor="val_loss",  # validation loss를 기준으로 체크포인트 선택
+    mode="min",  # val_loss가 작을수록 더 좋은 모델로 간주
+    every_n_epochs=1  # 매 에포크마다 체크포인트 저장
+)
 
   model = ERCTrainer(clsNum=clsNum, lr=config.lr, weight_decay=config.weight_decay, warmup_step=config.lr_decay_start)
   trainer = Trainer(
@@ -83,10 +102,15 @@ def main(config):
     devices=[config.gpu_id] if config.gpu_id >= 0 else None,
     accelerator="gpu" if config.gpu_id >= 0 else "cpu",
     enable_progress_bar=True,
-    logger=mlflow_logger
-)
-
-  trainer.fit(model, data_loader)
+    logger=mlflow_logger,
+    callbacks=[checkpoint_callback],
+    check_val_every_n_epoch=1
+  )
+  
+  if config.resume_ckpt is not None:
+    trainer.fit(model, data_loader, ckpt_path=config.resume_ckpt)
+  else:
+    trainer.fit(model, data_loader)
 
 
 if __name__ == '__main__':
