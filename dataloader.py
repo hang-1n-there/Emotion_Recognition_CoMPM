@@ -21,5 +21,5 @@ class MeldDataLoader(pl.LightningDataModule):
   def train_dataloader(self):
     return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4, collate_fn=self.train_dataset.collate_fn)
 
-  def valid_dataloader(self):
-    return DataLoader(self.valid_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4, collate_fn=self.val_dataset.collate_fn)
+  def val_dataloader(self):
+    return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=4, collate_fn=self.val_dataset.collate_fn)
